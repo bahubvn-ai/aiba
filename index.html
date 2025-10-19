@@ -1,0 +1,1402 @@
+<!DOCTYPE html><html lang="vi"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VietBank - Chuyển tiền</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #fff;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #ff6b00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .content {
+            height: calc(812px - 44px - 68px);
+            overflow-y: auto;
+            background: #f5f5f5;
+        }
+
+        .screen {
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+            margin: 16px;
+            padding: 20px;
+            border-radius: 16px;
+            color: white;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .account-number {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .transfer-types {
+            padding: 0 16px;
+        }
+
+        .transfer-type-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+        }
+
+        .transfer-type-btn:active {
+            transform: scale(0.98);
+        }
+
+        .transfer-type-btn h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .transfer-type-btn p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .transfer-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            padding: 16px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ff6b00;
+        }
+
+        .form-input.error {
+            border-color: #ff3b30;
+        }
+
+        .error-message {
+            color: #ff3b30;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .recipient-info {
+            background: white;
+            margin: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #ff6b00;
+        }
+
+        .recipient-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .recipient-account {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            width: calc(100% - 32px);
+            margin: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #ff6b00;
+            border: 2px solid #ff6b00;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            width: calc(100% - 32px);
+            margin: 0 16px 16px;
+            cursor: pointer;
+        }
+
+        .confirm-section {
+            background: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .confirm-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .confirm-row:last-child {
+            border-bottom: none;
+        }
+
+        .confirm-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .confirm-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            text-align: right;
+        }
+
+        .confirm-amount {
+            font-size: 24px;
+            color: #ff6b00;
+        }
+
+        .otp-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .otp-modal.show {
+            display: flex;
+        }
+
+        .otp-content {
+            background: white;
+            width: 320px;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .otp-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .otp-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .otp-inputs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .otp-input {
+            width: 48px;
+            height: 56px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #ff6b00;
+        }
+
+        .auth-options {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .auth-btn {
+            flex: 1;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-btn.selected {
+            border-color: #ff6b00;
+            background: #fff5f0;
+        }
+
+        .auth-icon {
+            font-size: 32px;
+        }
+
+        .auth-label {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 40px auto 24px;
+            font-size: 48px;
+            color: white;
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff3b30 0%, #ff453a 100%);
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 40px auto 24px;
+            font-size: 48px;
+            color: white;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .result-message {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 0 32px;
+        }
+
+        .transaction-id {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 0 16px 24px;
+            text-align: center;
+        }
+
+        .transaction-id-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .transaction-id-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            font-family: monospace;
+        }
+
+        .recent-recipients {
+            background: white;
+            margin: 16px;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .recent-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .recipient-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .recipient-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .recipient-details {
+            flex: 1;
+        }
+
+        .recipient-details-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .recipient-details-account {
+            font-size: 12px;
+            color: #666;
+        }
+
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        .fee-info {
+            background: #fff5f0;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fee-icon {
+            font-size: 24px;
+        }
+
+        .fee-text {
+            flex: 1;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff6b00;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-banner {
+            background: #e8f5e9;
+            padding: 12px 16px;
+            margin: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            color: #4caf50;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #2e7d32;
+            flex: 1;
+        }
+
+        .quick-amount {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 0 16px;
+            margin-bottom: 16px;
+        }
+
+        .quick-amount-btn {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-amount-btn:active {
+            transform: scale(0.95);
+        }
+
+        .quick-amount-btn.selected {
+            border-color: #ff6b00;
+            background: #fff5f0;
+            color: #ff6b00;
+        }
+    </style>
+<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.3f7572448765332f3047.js"></script></head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>●●●●●</span>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <div class="header">
+                <h1>Chuyển tiền</h1>
+            </div>
+            <div class="content">
+                <div class="balance-card">
+                    <div class="balance-label">Số dư khả dụng</div>
+                    <div class="balance-amount" id="userBalance">50.000.000 ₫</div>
+                    <div class="account-number">STK: 0123456789 - Nguyễn Văn A</div>
+                </div>
+                
+                <div class="transfer-types">
+                    <button class="transfer-type-btn" onclick="startTransfer('internal')">
+                        <div class="transfer-icon">🏦</div>
+                        <h3>Chuyển nội bộ VietBank</h3>
+                        <p>Miễn phí - Nhận tiền ngay lập tức</p>
+                    </button>
+                    
+                    <button class="transfer-type-btn" onclick="startTransfer('napas')">
+                        <div class="transfer-icon">🏛️</div>
+                        <h3>Chuyển liên ngân hàng (NAPAS)</h3>
+                        <p>Phí 2.500đ - Nhận trong vài phút</p>
+                    </button>
+                    
+                    <button class="transfer-type-btn" onclick="startTransfer('swift')">
+                        <div class="transfer-icon">🌍</div>
+                        <h3>Chuyển quốc tế (SWIFT)</h3>
+                        <p>Phí 300.000đ - Nhận trong 1-3 ngày</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Internal Transfer Form -->
+        <div id="internalForm" class="screen">
+            <div class="header">
+                <button class="back-btn" onclick="goBack('homeScreen')">←</button>
+                <h1>Chuyển nội bộ</h1>
+                <div style="width: 36px;"></div>
+            </div>
+            <div class="content">
+                <div class="recent-recipients">
+                    <div class="recent-title">Người nhận gần đây</div>
+                    <div class="recipient-item" onclick="selectRecipient('0987654321', 'Trần Thị B', 'VietBank')">
+                        <div class="recipient-avatar">B</div>
+                        <div class="recipient-details">
+                            <div class="recipient-details-name">Trần Thị B</div>
+                            <div class="recipient-details-account">0987654321</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số tài khoản người nhận</label>
+                    <input type="text" class="form-input" id="internalAccount" placeholder="Nhập số tài khoản" maxlength="10">
+                    <div class="error-message" id="internalAccountError">Số tài khoản không hợp lệ</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số tiền</label>
+                    <input type="text" class="form-input" id="internalAmount" placeholder="0" inputmode="numeric">
+                    <div class="error-message" id="internalAmountError">Số dư không đủ</div>
+                </div>
+
+                <div class="quick-amount">
+                    <button class="quick-amount-btn" onclick="setAmount(500000)">500.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(1000000)">1.000.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(2000000)">2.000.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(5000000)">5.000.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(10000000)">10.000.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(20000000)">20.000.000</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nội dung chuyển khoản</label>
+                    <input type="text" class="form-input" id="internalNote" placeholder="Nhập nội dung (không bắt buộc)">
+                </div>
+
+                <div class="info-banner">
+                    <span class="info-icon">ℹ️</span>
+                    <span class="info-text">Miễn phí giao dịch. Tiền đến tài khoản ngay lập tức.</span>
+                </div>
+
+                <button class="btn-primary" onclick="checkInternalAccount()">Tiếp tục</button>
+            </div>
+        </div>
+
+        <!-- NAPAS Transfer Form -->
+        <div id="napasForm" class="screen">
+            <div class="header">
+                <button class="back-btn" onclick="goBack('homeScreen')">←</button>
+                <h1>Chuyển liên ngân hàng</h1>
+                <div style="width: 36px;"></div>
+            </div>
+            <div class="content">
+                <div class="form-group">
+                    <label class="form-label">Ngân hàng nhận</label>
+                    <select class="form-input" id="napasBank">
+                        <option value="">Chọn ngân hàng</option>
+                        <option value="VCB">Vietcombank</option>
+                        <option value="TCB">Techcombank</option>
+                        <option value="MB">MB Bank</option>
+                        <option value="ACB">ACB</option>
+                        <option value="VPB">VPBank</option>
+                        <option value="BIDV">BIDV</option>
+                        <option value="AGR">Agribank</option>
+                        <option value="KLB">Kiên Long Bank</option>
+                        <option value="SCB">Sacombank</option>
+                        <option value="VIB">VIB</option>
+                        <option value="SHB">SHB</option>
+                        <option value="TPB">TPBank</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số tài khoản người nhận</label>
+                    <input type="text" class="form-input" id="napasAccount" placeholder="Nhập số tài khoản" maxlength="14">
+                    <div class="error-message" id="napasAccountError">Số tài khoản không hợp lệ</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số tiền</label>
+                    <input type="text" class="form-input" id="napasAmount" placeholder="0" inputmode="numeric">
+                    <div class="error-message" id="napasAmountError">Số dư không đủ</div>
+                </div>
+
+                <div class="quick-amount">
+                    <button class="quick-amount-btn" onclick="setAmount(500000, 'napas')">500.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(1000000, 'napas')">1.000.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(2000000, 'napas')">2.000.000</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nội dung chuyển khoản</label>
+                    <input type="text" class="form-input" id="napasNote" placeholder="Nhập nội dung">
+                </div>
+
+                <div class="fee-info">
+                    <span class="fee-icon">💰</span>
+                    <span class="fee-text">Phí giao dịch: 2.500đ. Tiền đến trong vài phút qua hệ thống NAPAS.</span>
+                </div>
+
+                <button class="btn-primary" onclick="checkNapasAccount()">Tiếp tục</button>
+            </div>
+        </div>
+
+        <!-- SWIFT Transfer Form -->
+        <div id="swiftForm" class="screen">
+            <div class="header">
+                <button class="back-btn" onclick="goBack('homeScreen')">←</button>
+                <h1>Chuyển tiền quốc tế</h1>
+                <div style="width: 36px;"></div>
+            </div>
+            <div class="content">
+                <div class="form-group">
+                    <label class="form-label">Quốc gia</label>
+                    <select class="form-input" id="swiftCountry">
+                        <option value="">Chọn quốc gia</option>
+                        <option value="US">Hoa Kỳ</option>
+                        <option value="UK">Vương quốc Anh</option>
+                        <option value="AU">Úc</option>
+                        <option value="SG">Singapore</option>
+                        <option value="JP">Nhật Bản</option>
+                        <option value="KR">Hàn Quốc</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mã SWIFT/BIC</label>
+                    <input type="text" class="form-input" id="swiftCode" placeholder="Ví dụ: CHASUS33" maxlength="11">
+                    <div class="error-message" id="swiftCodeError">Mã SWIFT không hợp lệ</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số tài khoản/IBAN</label>
+                    <input type="text" class="form-input" id="swiftAccount" placeholder="Nhập số tài khoản">
+                    <div class="error-message" id="swiftAccountError">Số tài khoản không hợp lệ</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tên người nhận (tiếng Anh)</label>
+                    <input type="text" class="form-input" id="swiftName" placeholder="Ví dụ: John Smith">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số tiền (VND)</label>
+                    <input type="text" class="form-input" id="swiftAmount" placeholder="0" inputmode="numeric">
+                    <div class="error-message" id="swiftAmountError">Số dư không đủ</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nội dung chuyển khoản (tiếng Anh)</label>
+                    <input type="text" class="form-input" id="swiftNote" placeholder="Purpose of transfer">
+                </div>
+
+                <div class="fee-info">
+                    <span class="fee-icon">⚠️</span>
+                    <span class="fee-text">Phí giao dịch: 300.000đ. Thời gian xử lý 1-3 ngày làm việc qua mạng SWIFT.</span>
+                </div>
+
+                <button class="btn-primary" onclick="checkSwiftAccount()">Tiếp tục</button>
+            </div>
+        </div>
+
+        <!-- Confirm Screen -->
+        <div id="confirmScreen" class="screen">
+            <div class="header">
+                <button class="back-btn" onclick="goBackFromConfirm()">←</button>
+                <h1>Xác nhận giao dịch</h1>
+                <div style="width: 36px;"></div>
+            </div>
+            <div class="content">
+                <div class="confirm-section">
+                    <div class="confirm-row">
+                        <span class="confirm-label">Người nhận</span>
+                        <span class="confirm-value" id="confirmRecipient"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Số tài khoản</span>
+                        <span class="confirm-value" id="confirmAccount"></span>
+                    </div>
+                    <div class="confirm-row" id="confirmBankRow" style="display: none;">
+                        <span class="confirm-label">Ngân hàng</span>
+                        <span class="confirm-value" id="confirmBank"></span>
+                    </div>
+                    <div class="confirm-row" id="confirmSwiftRow" style="display: none;">
+                        <span class="confirm-label">Mã SWIFT</span>
+                        <span class="confirm-value" id="confirmSwift"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Số tiền</span>
+                        <span class="confirm-value confirm-amount" id="confirmAmount"></span>
+                    </div>
+                    <div class="confirm-row" id="confirmFeeRow" style="display: none;">
+                        <span class="confirm-label">Phí giao dịch</span>
+                        <span class="confirm-value" id="confirmFee"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Tổng tiền</span>
+                        <span class="confirm-value confirm-amount" id="confirmTotal"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Nội dung</span>
+                        <span class="confirm-value" id="confirmNote"></span>
+                    </div>
+                </div>
+
+                <div style="padding: 16px;">
+                    <div class="form-label" style="margin-bottom: 12px;">Chọn phương thức xác thực</div>
+                </div>
+
+                <div class="auth-options">
+                    <button class="auth-btn selected" onclick="selectAuth('otp')" id="authOtp">
+                        <span class="auth-icon">📱</span>
+                        <span class="auth-label">SMS OTP</span>
+                    </button>
+                    <button class="auth-btn" onclick="selectAuth('face')" id="authFace">
+                        <span class="auth-icon">😊</span>
+                        <span class="auth-label">Face ID</span>
+                    </button>
+                    <button class="auth-btn" onclick="selectAuth('soft')" id="authSoft">
+                        <span class="auth-icon">🔐</span>
+                        <span class="auth-label">Smart OTP</span>
+                    </button>
+                </div>
+
+                <button class="btn-primary" onclick="proceedWithAuth()">Xác nhận chuyển tiền</button>
+            </div>
+        </div>
+
+        <!-- OTP Modal -->
+        <div id="otpModal" class="otp-modal">
+            <div class="otp-content">
+                <div class="otp-title">Nhập mã OTP</div>
+                <div class="otp-subtitle">Mã xác thực đã được gửi đến<br>số điện thoại ****6789</div>
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" id="otp1" oninput="moveToNext(this, 'otp2')">
+                    <input type="text" class="otp-input" maxlength="1" id="otp2" oninput="moveToNext(this, 'otp3')">
+                    <input type="text" class="otp-input" maxlength="1" id="otp3" oninput="moveToNext(this, 'otp4')">
+                    <input type="text" class="otp-input" maxlength="1" id="otp4" oninput="moveToNext(this, 'otp5')">
+                    <input type="text" class="otp-input" maxlength="1" id="otp5" oninput="moveToNext(this, 'otp6')">
+                    <input type="text" class="otp-input" maxlength="1" id="otp6" oninput="verifyOTP()">
+                </div>
+                <button class="btn-primary" style="width: 100%; margin: 0;" onclick="verifyOTP()">Xác nhận</button>
+                <button class="btn-secondary" style="width: 100%; margin-top: 12px;" onclick="closeOTP()">Hủy</button>
+            </div>
+        </div>
+
+        <!-- Processing Screen -->
+        <div id="processingScreen" class="screen">
+            <div class="header">
+                <h1>Đang xử lý</h1>
+            </div>
+            <div class="content" style="display: flex; align-items: center; justify-content: center; flex-direction: column; padding-top: 100px;">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 24px; color: #666; text-align: center;">Đang thực hiện giao dịch...<br>Vui lòng không tắt ứng dụng</p>
+            </div>
+        </div>
+
+        <!-- Success Screen -->
+        <div id="successScreen" class="screen">
+            <div class="header">
+                <h1>Kết quả giao dịch</h1>
+            </div>
+            <div class="content">
+                <div class="success-icon">✓</div>
+                <div class="result-title">Giao dịch thành công!</div>
+                <div class="result-message" id="successMessage">Tiền đã được chuyển đến tài khoản người nhận</div>
+                
+                <div class="transaction-id">
+                    <div class="transaction-id-label">Mã giao dịch</div>
+                    <div class="transaction-id-value" id="transactionId"></div>
+                </div>
+
+                <div class="confirm-section">
+                    <div class="confirm-row">
+                        <span class="confirm-label">Người nhận</span>
+                        <span class="confirm-value" id="successRecipient"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Số tài khoản</span>
+                        <span class="confirm-value" id="successAccount"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Số tiền</span>
+                        <span class="confirm-value confirm-amount" id="successAmount"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Thời gian</span>
+                        <span class="confirm-value" id="successTime"></span>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="goHome()">Về trang chủ</button>
+                <button class="btn-secondary" onclick="shareReceipt()">Chia sẻ biên lai</button>
+            </div>
+        </div>
+
+        <!-- Error Screen -->
+        <div id="errorScreen" class="screen">
+            <div class="header">
+                <h1>Kết quả giao dịch</h1>
+            </div>
+            <div class="content">
+                <div class="error-icon">✕</div>
+                <div class="result-title">Giao dịch thất bại!</div>
+                <div class="result-message" id="errorMessage"></div>
+                
+                <button class="btn-primary" onclick="goHome()">Về trang chủ</button>
+                <button class="btn-secondary" onclick="retryTransaction()">Thử lại</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock database
+        const accounts = {
+            '0987654321': { name: 'Trần Thị B', bank: 'VietBank' },
+            '1234567890': { name: 'Lê Văn C', bank: 'VietBank' },
+            '9876543210': { name: 'Phạm Thị D', bank: 'Vietcombank' },
+            '5555666677': { name: 'Hoàng Văn E', bank: 'Techcombank' },
+            '6789012345': { name: 'Nguyễn Thị F', bank: 'Kiên Long Bank' },
+            '4567890123': { name: 'Võ Văn G', bank: 'Kiên Long Bank' },
+            'GB29NWBK60161331926819': { name: 'John Smith', bank: 'SWIFT' },
+            'US1234567890': { name: 'Mary Johnson', bank: 'SWIFT' }
+        };
+
+        const bankNames = {
+            'VCB': 'Vietcombank',
+            'TCB': 'Techcombank',
+            'MB': 'MB Bank',
+            'ACB': 'ACB',
+            'VPB': 'VPBank',
+            'BIDV': 'BIDV',
+            'AGR': 'Agribank',
+            'KLB': 'Kiên Long Bank',
+            'SCB': 'Sacombank',
+            'VIB': 'VIB',
+            'SHB': 'SHB',
+            'TPB': 'TPBank'
+        };
+
+        let currentTransferType = '';
+        let currentAuthMethod = 'otp';
+        let userBalance = 50000000;
+        let transactionData = {};
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        }
+
+        function updateBalance() {
+            document.getElementById('userBalance').textContent = formatCurrency(userBalance);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function goBack(screenId) {
+            showScreen(screenId);
+        }
+
+        function goBackFromConfirm() {
+            if (currentTransferType === 'internal') {
+                showScreen('internalForm');
+            } else if (currentTransferType === 'napas') {
+                showScreen('napasForm');
+            } else if (currentTransferType === 'swift') {
+                showScreen('swiftForm');
+            }
+        }
+
+        function startTransfer(type) {
+            currentTransferType = type;
+            if (type === 'internal') {
+                showScreen('internalForm');
+            } else if (type === 'napas') {
+                showScreen('napasForm');
+            } else if (type === 'swift') {
+                showScreen('swiftForm');
+            }
+        }
+
+        function selectRecipient(account, name, bank) {
+            document.getElementById('internalAccount').value = account;
+            checkInternalAccount();
+        }
+
+        function setAmount(amount, type = 'internal') {
+            const inputId = type === 'internal' ? 'internalAmount' : (type === 'napas' ? 'napasAmount' : 'swiftAmount');
+            const input = document.getElementById(inputId);
+            input.value = formatCurrency(amount).replace(' ₫', '');
+            
+            // Update button styles
+            document.querySelectorAll('.quick-amount-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        function parseAmount(amountStr) {
+            return parseInt(amountStr.replace(/\./g, '').replace(/,/g, '').replace(/₫/g, '').trim());
+        }
+
+        function checkInternalAccount() {
+            const account = document.getElementById('internalAccount').value;
+            const amountStr = document.getElementById('internalAmount').value;
+            const amount = parseAmount(amountStr);
+            
+            // Reset errors
+            document.getElementById('internalAccountError').classList.remove('show');
+            document.getElementById('internalAmountError').classList.remove('show');
+            document.getElementById('internalAccount').classList.remove('error');
+            document.getElementById('internalAmount').classList.remove('error');
+
+            if (!account || account.length < 10) {
+                document.getElementById('internalAccountError').classList.add('show');
+                document.getElementById('internalAccount').classList.add('error');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                document.getElementById('internalAmountError').textContent = 'Vui lòng nhập số tiền';
+                document.getElementById('internalAmountError').classList.add('show');
+                document.getElementById('internalAmount').classList.add('error');
+                return;
+            }
+
+            if (amount > userBalance) {
+                document.getElementById('internalAmountError').textContent = 'Số dư không đủ';
+                document.getElementById('internalAmountError').classList.add('show');
+                document.getElementById('internalAmount').classList.add('error');
+                return;
+            }
+
+            if (!accounts[account]) {
+                document.getElementById('internalAccountError').textContent = 'Tài khoản không tồn tại';
+                document.getElementById('internalAccountError').classList.add('show');
+                document.getElementById('internalAccount').classList.add('error');
+                return;
+            }
+
+            const note = document.getElementById('internalNote').value || 'Chuyển tiền';
+            prepareConfirmation(account, amount, 0, note);
+        }
+
+        function checkNapasAccount() {
+            const bank = document.getElementById('napasBank').value;
+            const account = document.getElementById('napasAccount').value;
+            const amountStr = document.getElementById('napasAmount').value;
+            const amount = parseAmount(amountStr);
+            const fee = 2500;
+            
+            // Reset errors
+            document.getElementById('napasAccountError').classList.remove('show');
+            document.getElementById('napasAmountError').classList.remove('show');
+            document.getElementById('napasAccount').classList.remove('error');
+            document.getElementById('napasAmount').classList.remove('error');
+
+            if (!bank) {
+                alert('Vui lòng chọn ngân hàng');
+                return;
+            }
+
+            if (!account || account.length < 6) {
+                document.getElementById('napasAccountError').classList.add('show');
+                document.getElementById('napasAccount').classList.add('error');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                document.getElementById('napasAmountError').textContent = 'Vui lòng nhập số tiền';
+                document.getElementById('napasAmountError').classList.add('show');
+                document.getElementById('napasAmount').classList.add('error');
+                return;
+            }
+
+            if (amount + fee > userBalance) {
+                document.getElementById('napasAmountError').textContent = 'Số dư không đủ (bao gồm phí)';
+                document.getElementById('napasAmountError').classList.add('show');
+                document.getElementById('napasAmount').classList.add('error');
+                return;
+            }
+
+            const note = document.getElementById('napasNote').value || 'Chuyển tiền';
+            transactionData.bank = bankNames[bank] || bank;
+            prepareConfirmation(account, amount, fee, note);
+        }
+
+        function checkSwiftAccount() {
+            const country = document.getElementById('swiftCountry').value;
+            const swiftCode = document.getElementById('swiftCode').value;
+            const account = document.getElementById('swiftAccount').value;
+            const name = document.getElementById('swiftName').value;
+            const amountStr = document.getElementById('swiftAmount').value;
+            const amount = parseAmount(amountStr);
+            const fee = 300000;
+            
+            // Reset errors
+            document.getElementById('swiftCodeError').classList.remove('show');
+            document.getElementById('swiftAccountError').classList.remove('show');
+            document.getElementById('swiftAmountError').classList.remove('show');
+            document.getElementById('swiftCode').classList.remove('error');
+            document.getElementById('swiftAccount').classList.remove('error');
+            document.getElementById('swiftAmount').classList.remove('error');
+
+            if (!country) {
+                alert('Vui lòng chọn quốc gia');
+                return;
+            }
+
+            if (!swiftCode || swiftCode.length < 8) {
+                document.getElementById('swiftCodeError').classList.add('show');
+                document.getElementById('swiftCode').classList.add('error');
+                return;
+            }
+
+            if (!account) {
+                document.getElementById('swiftAccountError').classList.add('show');
+                document.getElementById('swiftAccount').classList.add('error');
+                return;
+            }
+
+            if (!name) {
+                alert('Vui lòng nhập tên người nhận');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                document.getElementById('swiftAmountError').textContent = 'Vui lòng nhập số tiền';
+                document.getElementById('swiftAmountError').classList.add('show');
+                document.getElementById('swiftAmount').classList.add('error');
+                return;
+            }
+
+            if (amount + fee > userBalance) {
+                document.getElementById('swiftAmountError').textContent = 'Số dư không đủ (bao gồm phí)';
+                document.getElementById('swiftAmountError').classList.add('show');
+                document.getElementById('swiftAmount').classList.add('error');
+                return;
+            }
+
+            const note = document.getElementById('swiftNote').value || 'International transfer';
+            transactionData.swiftCode = swiftCode;
+            transactionData.country = country;
+            transactionData.recipientName = name;
+            prepareConfirmation(account, amount, fee, note);
+        }
+
+        function prepareConfirmation(account, amount, fee, note) {
+            transactionData = {
+                ...transactionData,
+                account: account,
+                amount: amount,
+                fee: fee,
+                note: note,
+                total: amount + fee
+            };
+
+            let recipientName = 'Không xác định';
+            if (accounts[account]) {
+                recipientName = accounts[account].name;
+            } else if (transactionData.recipientName) {
+                recipientName = transactionData.recipientName;
+            }
+
+            document.getElementById('confirmRecipient').textContent = recipientName;
+            document.getElementById('confirmAccount').textContent = account;
+            document.getElementById('confirmAmount').textContent = formatCurrency(amount);
+            document.getElementById('confirmNote').textContent = note;
+
+            if (currentTransferType === 'napas') {
+                document.getElementById('confirmBankRow').style.display = 'flex';
+                document.getElementById('confirmBank').textContent = transactionData.bank;
+                document.getElementById('confirmFeeRow').style.display = 'flex';
+                document.getElementById('confirmFee').textContent = formatCurrency(fee);
+            } else if (currentTransferType === 'swift') {
+                document.getElementById('confirmSwiftRow').style.display = 'flex';
+                document.getElementById('confirmSwift').textContent = transactionData.swiftCode;
+                document.getElementById('confirmFeeRow').style.display = 'flex';
+                document.getElementById('confirmFee').textContent = formatCurrency(fee);
+            } else {
+                document.getElementById('confirmBankRow').style.display = 'none';
+                document.getElementById('confirmSwiftRow').style.display = 'none';
+                document.getElementById('confirmFeeRow').style.display = 'none';
+            }
+
+            document.getElementById('confirmTotal').textContent = formatCurrency(amount + fee);
+            showScreen('confirmScreen');
+        }
+
+        function selectAuth(method) {
+            currentAuthMethod = method;
+            document.querySelectorAll('.auth-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('auth' + method.charAt(0).toUpperCase() + method.slice(1)).classList.add('selected');
+        }
+
+        function proceedWithAuth() {
+            if (currentAuthMethod === 'otp') {
+                document.getElementById('otpModal').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('otp1').focus();
+                }, 100);
+            } else if (currentAuthMethod === 'face') {
+                showScreen('processingScreen');
+                setTimeout(() => {
+                    processTransaction();
+                }, 2000);
+            } else if (currentAuthMethod === 'soft') {
+                const smartOTP = prompt('Nhập mã Smart OTP từ ứng dụng:');
+                if (smartOTP === '123456') {
+                    processTransaction();
+                } else {
+                    showError('Mã Smart OTP không chính xác');
+                }
+            }
+        }
+
+        function moveToNext(current, nextId) {
+            if (current.value.length === 1 && nextId) {
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        function verifyOTP() {
+            const otp = ['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6']
+                .map(id => document.getElementById(id).value)
+                .join('');
+            
+            if (otp.length === 6) {
+                closeOTP();
+                processTransaction();
+            } else {
+                alert('Vui lòng nhập đầy đủ mã OTP');
+            }
+        }
+
+        function closeOTP() {
+            document.getElementById('otpModal').classList.remove('show');
+            ['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+
+        function processTransaction() {
+            showScreen('processingScreen');
+            
+            setTimeout(() => {
+                const isSuccess = Math.random() > 0.1;
+                
+                if (isSuccess) {
+                    userBalance -= transactionData.total;
+                    updateBalance();
+                    
+                    const txId = 'VB' + Date.now().toString().slice(-10);
+                    document.getElementById('transactionId').textContent = txId;
+                    
+                    let recipientName = 'Không xác định';
+                    if (accounts[transactionData.account]) {
+                        recipientName = accounts[transactionData.account].name;
+                    } else if (transactionData.recipientName) {
+                        recipientName = transactionData.recipientName;
+                    }
+                    
+                    document.getElementById('successRecipient').textContent = recipientName;
+                    document.getElementById('successAccount').textContent = transactionData.account;
+                    document.getElementById('successAmount').textContent = formatCurrency(transactionData.amount);
+                    
+                    const now = new Date();
+                    const timeStr = now.toLocaleString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    document.getElementById('successTime').textContent = timeStr;
+                    
+                    let message = '';
+                    if (currentTransferType === 'internal') {
+                        message = 'Tiền đã được chuyển đến tài khoản người nhận ngay lập tức';
+                    } else if (currentTransferType === 'napas') {
+                        message = 'Giao dịch đang được xử lý qua hệ thống NAPAS. Tiền sẽ đến tài khoản trong vài phút.';
+                    } else if (currentTransferType === 'swift') {
+                        message = 'Giao dịch đang được xử lý qua mạng SWIFT. Tiền sẽ đến tài khoản trong 1-3 ngày làm việc.';
+                    }
+                    document.getElementById('successMessage').textContent = message;
+                    
+                    showScreen('successScreen');
+                } else {
+                    const errors = [
+                        'Hệ thống ngân hàng đang bảo trì. Vui lòng thử lại sau.',
+                        'Kết nối mạng không ổn định. Vui lòng kiểm tra và thử lại.',
+                        'Tài khoản người nhận đã bị khóa tạm thời.',
+                        'Giao dịch vượt quá hạn mức cho phép trong ngày.'
+                    ];
+                    const randomError = errors[Math.floor(Math.random() * errors.length)];
+                    showError(randomError);
+                }
+            }, 2000);
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            showScreen('errorScreen');
+        }
+
+        function goHome() {
+            currentTransferType = '';
+            transactionData = {};
+            
+            ['internalAccount', 'internalAmount', 'internalNote'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            ['napasAccount', 'napasAmount', 'napasNote'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('napasBank').value = '';
+            ['swiftAccount', 'swiftAmount', 'swiftNote', 'swiftCode', 'swiftName'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('swiftCountry').value = '';
+            
+            showScreen('homeScreen');
+        }
+
+        function retryTransaction() {
+            goBackFromConfirm();
+        }
+
+        function shareReceipt() {
+            alert('Tính năng chia sẻ biên lai đang được phát triển');
+        }
+
+        document.addEventListener('input', (e) => {
+            if (e.target.id.includes('Amount')) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value) {
+                    e.target.value = new Intl.NumberFormat('vi-VN').format(parseInt(value));
+                }
+            }
+        });
+
+        updateBalance();
+    </script>
+
+
+</body></html>
